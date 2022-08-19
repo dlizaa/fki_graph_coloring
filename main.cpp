@@ -39,13 +39,19 @@ class Graph_vertices
 		void set_color(int a)
 		{
 			color = a;
+			return;
 		}
 
-		void add_path(int numb, int path)
+		int add_path(int numb, int path)
 		{
+			int i;
 			number = numb;
+			for (i = 0; i < n_paths; i++)
+				if (paths[i] == path)
+					return 1;
 			n_paths++;
 			paths.push_back(path);
+			return 0;
 		}
 
 		void out()
@@ -55,6 +61,7 @@ class Graph_vertices
 			for (i = 0; i < n_paths; i++)
 				cout << paths[i];
 			cout << endl;
+			return;
 		}
 		
 };
@@ -62,7 +69,7 @@ class Graph_vertices
 Graph_vertices *set_vertices(int n_v, int n_p)
 {
 	Graph_vertices *vertices;
-	int i, a, b;
+	int i, a, b, flag;
 
 	vertices = new Graph_vertices[n_v];
 	
@@ -75,8 +82,9 @@ Graph_vertices *set_vertices(int n_v, int n_p)
 			cout << "Wrong data" << endl;
 			exit(0);
 		}
-		vertices[a].add_path(a, b);
-		vertices[b].add_path(b, a);
+		flag = vertices[a].add_path(a, b);
+		if (flag == 0)
+			vertices[b].add_path(b, a);
 	}
 
 	return vertices;
