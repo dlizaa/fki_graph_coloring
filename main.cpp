@@ -3,7 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
-#include <cstring>
+#include <malloc.h>
+//#include <cstring>
 
 using namespace std;
 
@@ -119,11 +120,11 @@ else from the list of paths number-vertix*/
 			if (vertices[paths[i]].get_n_paths() > max)
 			{
 				
-				if (vertices[paths[i]].get_color() == 0)
-				{
+				//if (vertices[paths[i]].get_color() == 0)
+				//{
 					max = vertices[paths[i]].get_n_paths();
 					max_number = paths[i];
-				}
+				//}
 			}
 		}
 		if (max == 0)
@@ -165,9 +166,11 @@ int maximum(int *colors_of_vertices, int n)
 }
 void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colors_of_vertices)
 {
-	int cur_vert, j;
+	int cur_vert, i, j, flag;
+	vector <int> paths;
 	cur_vert = vertix_with_max_n_paths(vertices, -n_vert);
-	while (minimum(colors_of_vertices, n_vert) == 0)
+	
+	/*while (minimum(colors_of_vertices, n_vert) == 0)
 	{
 		if (vertices[cur_vert].get_color() == 0)
 		{
@@ -178,6 +181,57 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 			colors_of_vertices[cur_vert] = j;
 		}
 		cur_vert = vertix_with_max_n_paths(vertices, cur_vert);
+	}*/
+
+	vertices[cur_vert].set_color(1);
+	colors_of_vertices[cur_vert] = 1;
+
+	while (minimum(colors_of_vertices, n_vert) == 0)
+	{
+		j = colors_of_vertices[cur_vert] - 1;
+		flag = 0;	//if flag = 1 then you need bigger j, elsee smaller
+		paths = vertices[cur_vert].get_paths();
+		while (!paths.empty())
+		{
+			if (j <= 1)
+			{
+				j = colors_of_vertices[cur_vert] + 1;
+				flag = 1;
+			}	
+			for (i = 0; i < paths.size(); i++)
+			{
+				if (possible_color(j, colors_of_vertices, vertices[paths[i]].get_paths()))
+				{
+					colors_of_vertices[paths[i]] = j;
+					vertices[paths[i]].set_color(j);
+					paths[i] = paths[paths.size() - 1];
+					paths.pop_back();
+				}
+			}
+			if (flag == 0)
+				j--;
+			else
+				j++;
+		}
+
+		
+		cur_vert = vertix_with_max_n_paths(vertices, cur_vert);
+
+
+
+		/*j = 1;
+		if (j == colors_of_vertices[cur_vert])
+			j++;
+		while (possible_color(j, colors_of_vertices, vertices[cur_vert].get_paths()) == 0)
+		{
+			j++;
+			if (j == colors_of_vertices[cur_vert])
+				j++;
+		}
+		for (i = 0; i < paths.size(); i++)
+		{
+			
+		}*/
 	}
 	return;
 }
@@ -199,8 +253,10 @@ int main()
 
 	vertices = set_vertices(n_vertices, n_paths);
 
-	colors_of_vertices = new int[n_vertices];
+	/*colors_of_vertices = new int[n_vertices];
 	memset(colors_of_vertices, 0, n_vertices * sizeof(*colors_of_vertices));
+*/
+	colors_of_vertices = (int*)calloc(n_vertices, sizeof(int));
 
 	start_coloring(n_vertices, n_paths, vertices, colors_of_vertices);
 
