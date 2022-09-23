@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include <cstring>
 
 using namespace std;
 
@@ -117,18 +118,75 @@ else from the list of paths number-vertix*/
 		{
 			if (vertices[paths[i]].get_n_paths() > max)
 			{
-				max = vertices[paths[i]].get_n_paths();
-				max_number = paths[i];
+				
+				if (vertices[paths[i]].get_color() == 0)
+				{
+					max = vertices[paths[i]].get_n_paths();
+					max_number = paths[i];
+				}
 			}
 		}
+		if (max == 0)
+			max_number = paths[0];
 	}
 	return max_number;
+}
+
+int possible_color(int j, int *col_of_vert, vector <int> paths)
+{
+	int i;
+	for (i = 0; i < paths.size(); i++)
+	{
+		if (j == col_of_vert[paths[i]])
+			return 0;
+	}
+	return 1;
+}
+
+int minimum(int *colors_of_vertices, int n)
+{
+	int i, mn;
+	mn = colors_of_vertices[0];
+	for (i = 1; i < n; i++)
+		if (colors_of_vertices[i] < mn)
+			mn = colors_of_vertices[i];
+	return mn;
+}
+
+
+int maximum(int *colors_of_vertices, int n)
+{
+	int i, mx;
+	mx = colors_of_vertices[0];
+	for (i = 1; i < n; i++)
+		if (colors_of_vertices[i] > mx)
+			mx = colors_of_vertices[i];
+	return mx;
+}
+void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colors_of_vertices)
+{
+	int cur_vert, j;
+	cur_vert = vertix_with_max_n_paths(vertices, -n_vert);
+	while (minimum(colors_of_vertices, n_vert) == 0)
+	{
+		if (vertices[cur_vert].get_color() == 0)
+		{
+			j = 1;
+			while (possible_color(j, colors_of_vertices, vertices[cur_vert].get_paths()) == 0)
+				j++;
+			vertices[cur_vert].set_color(j);
+			colors_of_vertices[cur_vert] = j;
+		}
+		cur_vert = vertix_with_max_n_paths(vertices, cur_vert);
+	}
+	return;
 }
 
 int main()
 {
 	int n_vertices, n_paths, n_colors, i;
-	int *colors_of_verticies; Graph_vertices *vertices;
+	int *colors_of_vertices; 
+	Graph_vertices *vertices;
 
 	cin >> n_paths;
 	cin >> n_vertices;
@@ -141,8 +199,19 @@ int main()
 
 	vertices = set_vertices(n_vertices, n_paths);
 
+	colors_of_vertices = new int[n_vertices];
+	memset(colors_of_vertices, 0, n_vertices * sizeof(*colors_of_vertices));
+
+	start_coloring(n_vertices, n_paths, vertices, colors_of_vertices);
+
+	cout << maximum(colors_of_vertices, n_vertices) << "!!!" << endl;	
+
+
 	//**************
 	
+	for (i = 0; i < n_vertices; i++)
+		cout << colors_of_vertices[i] << endl;
+
 	for (i = 0; i < n_vertices; i++)
 		vertices[i].out();
 
@@ -150,6 +219,8 @@ int main()
 
 	for (i = 0; i < n_vertices; i++)
 		cout << vertix_with_max_n_paths(vertices, i) << endl;
+
+	delete(colors_of_vertices);
 
 	return 0;
 }
