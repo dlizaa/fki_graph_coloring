@@ -188,16 +188,12 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 
 	while (minimum(colors_of_vertices, n_vert) == 0)
 	{
-		j = colors_of_vertices[cur_vert] - 1;
-		flag = 0;	//if flag = 1 then you need bigger j, elsee smaller
+		j = 1;
 		paths = vertices[cur_vert].get_paths();
 		while (!paths.empty())
 		{
-			if (j <= 1)
-			{
-				j = colors_of_vertices[cur_vert] + 1;
-				flag = 1;
-			}	
+			if (j == colors_of_vertices[cur_vert])
+				j++;
 			for (i = 0; i < paths.size(); i++)
 			{
 				if (possible_color(j, colors_of_vertices, vertices[paths[i]].get_paths()))
@@ -208,10 +204,7 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 					paths.pop_back();
 				}
 			}
-			if (flag == 0)
-				j--;
-			else
-				j++;
+			j++;
 		}
 
 		
