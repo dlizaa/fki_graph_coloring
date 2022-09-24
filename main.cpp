@@ -287,14 +287,52 @@ vector <int> remove_repeats(vector <int> paths)
 
 void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colors_of_vertices)
 {
-	int cur_vert, i, j, flag, counter = n_vert, c;
-	vector <int> unseen_paths, paths;
+	int cur_vert, i, j, k, flag, counter = n_vert, c;
+	vector <int> unseen_paths, paths, vert;
 	cur_vert = vertix_with_max_n_paths(vertices, -n_vert);
 	for (i = 0; i < n_vert; i++)
 		unseen_paths.push_back(1);
 	
 	j = 1;
 	while (minimum(colors_of_vertices, n_vert) == 0)
+	{
+		vert.clear();
+		for (i = 0; i < n_vert; i++)
+		{
+			if (colors_of_vertices[i] == 0)
+				vert.push_back(1);
+			else
+				vert.push_back(0);
+		}
+//		cout << "!!!!!!!" << endl;
+		if (j > 1)
+		{
+			k = 0;
+			while (vert[k] == 0)
+				k++;
+			cur_vert = k;
+		}
+//		cout << cur_vert << "!!!!!!!" << endl;
+		while (cur_vert < n_vert)
+		{
+			colors_of_vertices[cur_vert] = j;
+			vert[cur_vert] = 0;
+			paths = vertices[cur_vert].get_paths();
+//			cout << "!!!!!!!" << endl;
+			for (k = 0; k < vertices[cur_vert].get_n_paths(); k++)
+				vert[paths[k]] = 0;
+			k = 0;
+			while (vert[k] == 0)
+				k++;
+			cur_vert = k;
+		}
+		cout << "%%%%%%" << endl;
+		j++;
+	}
+
+
+
+	/*while (minimum(colors_of_vertices, n_vert) == 0)
 	{
 		i = 0;
 		while (colors_of_vertices[cur_vert] != 0)
@@ -312,9 +350,9 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 //				cout << paths[i] << "_";
 //			cout << paths.size() << endl;
 			paths = remove_repeats(paths);
-//			for (i = 0; i < paths.size(); i++)
-//				cout << paths[i] << "*";
-//			cout << paths.size() << endl;
+			for (i = 0; i < paths.size(); i++)
+				cout << paths[i] << "*";
+			cout << paths.size() << endl;
 			if (paths.size() < n_vert)
 			{
 				unseen_paths = unseen(paths, n_vert);
@@ -324,104 +362,7 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 		}
 		counter =- c;
 		j++;
-	}
-
-	/*while (counter != 0)
-	{
-		if (vertices[cur_vert].get_color() == 0)
-		{
-			j = 1;
-			while (possible_color(j, colors_of_vertices, vertices[cur_vert].get_paths()) == 0)
-				j++;
-			vertices[cur_vert].set_color(j);
-			colors_of_vertices[cur_vert] = j;
-			unseen_paths[cur_vert] = 0;
-			counter--;
-		}
-		cur_vert = vertix_with_max_n_paths(vertices, cur_vert);
-		if (cur_vert == -1)
-		{
-			i = 0;
-			while (unseen_paths[i] != 1)
-				i++;
-			cur_vert = i;
-		}
 	}*/
-
-	//vertices[cur_vert].set_color(1);
-	//colors_of_vertices[cur_vert] = 1;
-
-	/*while (minimum(colors_of_vertices, n_vert) == 0)
-	cout << "!!!!!!!!!!!!!!" << endl;
-	{
-		j = 1;
-		paths = vertices[cur_vert].get_paths();
-		while (!paths.empty())
-		{
-			if (j == colors_of_vertices[cur_vert])
-				j++;
-			for (i = 0; i < paths.size(); i++)
-			{
-				if (possible_color(j, colors_of_vertices, vertices[paths[i]].get_paths()))
-				{
-					colors_of_vertices[paths[i]] = j;
-					vertices[paths[i]].set_color(j);
-					paths[i] = paths[paths.size() - 1];
-					paths.pop_back();
-				}
-			}
-			j++;
-		}
-
-		
-		cur_vert = vertix_with_max_n_paths(vertices, cur_vert);
-
-
-
-		j = 1;
-		if (j == colors_of_vertices[cur_vert])
-			j++;
-		while (possible_color(j, colors_of_vertices, vertices[cur_vert].get_paths()) == 0)
-		{
-			j++;
-			if (j == colors_of_vertices[cur_vert])
-				j++;
-		}
-		for (i = 0; i < paths.size(); i++)
-		{
-			
-		}
-	}*/
-
-	/*cout << n_vert << endl;
-	for (i = 0; i < n_vert; i++)
-	{
-		paths.push_back(1);
-		cout << paths[i];
-	}
-
-	for (i = 0; i < paths.size(); i++)
-		cout << paths[i];
-
-	j = 1;
-	while (counter != 0)
-	{
-		for (i = 0; i < counter; i++)
-		{
-			if (possible_color(j, colors_of_vertices, vertices[i].get_paths()))
-			{
-				colors_of_vertices[i] = j;
-				vertices[i].set_color(j);
-				//paths[i] = 0;
-				counter--;
-			}
-			cout << "!!!!" << endl;
-		}	
-		j++;
-	}*/
-
-
-//	cout << "222" << endl;
 	return;
 }
 
