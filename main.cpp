@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <malloc.h>
+#include <algorithm>
 //#include <cstring>
 
 using namespace std;
@@ -56,6 +57,12 @@ class Graph_vertices
 			return 0;
 		}
 
+		void set_sorted_paths(vector <int> p)
+		{
+			paths = p;
+			return;
+		}
+
 		void out()
 		{
 			int i;
@@ -67,6 +74,39 @@ class Graph_vertices
 		}
 		
 };
+
+Graph_vertices *sort_vertices(Graph_vertices *vertices, int n_v)
+{
+	int i, j, k, x, mn, mn_k;
+	vector <int> n_paths, paths;
+	for (i = 0; i < n_v; i++)
+	{
+		paths = vertices[i].get_paths();
+		for (j = 0; j < vertices[i].get_n_paths(); j++)
+			n_paths.push_back(vertices[paths[j]].get_n_paths());
+		for (j = 0; j < vertices[i].get_n_paths(); j++)
+		{
+			mn_k = 0;
+			mn = n_paths[mn_k];
+			for (k = j; k < vertices[i].get_n_paths(); k++)
+			{
+				if (n_paths[k] > mn)
+				{
+					mn_k = k;
+					mn = n_paths[mn_k];
+				}
+			}
+			x = n_paths[j];
+			n_paths[j] = n_paths[mn_k];
+			n_paths[mn_k] = x;
+			x = paths[j];
+			paths[j] = paths[mn_k];
+			paths[mn_k] = x;
+		}
+		vertices[i].set_sorted_paths(paths);
+	}
+	return vertices;
+}
 
 Graph_vertices *set_vertices(int n_v, int n_p)
 {
@@ -89,6 +129,7 @@ Graph_vertices *set_vertices(int n_v, int n_p)
 			vertices[b].add_path(b, a);
 	}
 
+	vertices = sort_vertices(vertices, n_v);
 	return vertices;
 }
 
@@ -182,18 +223,66 @@ vector <int> coloring(int *counter, Graph_vertices *vertices, int *colors_of_ver
 		}
 	}
 	paths = vertices[cur_vert].get_paths();
-	for (i = 0; i < paths.size(); i++)
-		seen_paths.push_back(paths[i]);
+//	for (i = 0; i < paths.size(); i++)
+//		seen_paths.push_back(paths[i]);
 	seen_paths.push_back(cur_vert);
+//	for (i = 0; i < seen_paths.size(); i++)
+//		cout << seen_paths[i] << "!";
+//	cout << endl;
 	for (i = 0; i < paths.size(); i++)
 	{
-		next_paths = vertices[paths[i]].get_paths();
-		for (j = 0; j < next_paths.size(); j++)
+		if (paths[i] != cur_vert)
 		{
-			seen_paths = coloring(counter, vertices, colors_of_vertices, next_paths[j], color, seen_paths);
+			next_paths = vertices[paths[i]].get_paths();
+			for (j = 0; j < next_paths.size(); j++)
+			{
+				seen_paths = coloring(counter, vertices, colors_of_vertices, next_paths[j], color, seen_paths);
+			}
 		}
 	}
+//	for (i = 0; i < seen_paths.size(); i++)
+//		cout << seen_paths[i] << "!";
+//	cout << endl;
 	return seen_paths;
+}
+
+vector <int> unseen(vector <int> paths, int n)
+{
+	vector <int> p, p1;
+	int i;
+//	for (i = 0; i < p.size(); i++)
+//		cout << p[i] << "  ";
+//	cout << endl;
+//	cout << "@@@@@@@" << endl;
+	for (i = 0; i <= n; i++)
+		p.push_back(i);
+	for (i = 0; i < paths.size(); i++)
+		p[paths[i]] = -1;
+	for (i = 0; i < n; i++)
+		if (p[i] != -1)
+			p1.push_back(p[i]);
+//	for (i = 0; i < p1.size(); i++)
+//		cout << p1[i] << "  ";
+//	cout << endl;
+	return p1;
+}
+
+vector <int> remove_repeats(vector <int> paths)
+{
+	vector <int> p;
+	int i, j = 0;
+	sort(begin(paths), end(paths));
+	p.push_back(paths[0]);
+	for (i = 1; i < paths.size(); i++)
+		if (paths[i] != p[j])
+		{
+			j++;
+			p.push_back(paths[i]);
+		}
+//	for (i = 0; i < paths.size(); i++)
+//		cout << paths[i] << "()";
+//	cout << paths.size() << endl;
+	return p;
 }
 
 void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colors_of_vertices)
@@ -216,7 +305,23 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 		}
 		c = 0;
 		paths.clear();
-		coloring(&c, vertices, colors_of_vertices, cur_vert, j, paths);
+		while (paths.size() < n_vert)
+		{
+			paths = coloring(&c, vertices, colors_of_vertices, cur_vert, j, paths);
+//			for (i = 0; i < paths.size(); i++)
+//				cout << paths[i] << "_";
+//			cout << paths.size() << endl;
+			paths = remove_repeats(paths);
+//			for (i = 0; i < paths.size(); i++)
+//				cout << paths[i] << "*";
+//			cout << paths.size() << endl;
+			if (paths.size() < n_vert)
+			{
+				unseen_paths = unseen(paths, n_vert);
+//			if (!unseen_paths.empty())
+					cur_vert = unseen_paths[0];
+			}
+		}
 		counter =- c;
 		j++;
 	}
@@ -316,7 +421,7 @@ void start_coloring(int n_vert, int n_paths, Graph_vertices *vertices, int *colo
 	}*/
 
 
-	cout << "222" << endl;
+//	cout << "222" << endl;
 	return;
 }
 
@@ -326,8 +431,8 @@ int main()
 	int *colors_of_vertices; 
 	Graph_vertices *vertices;
 
-	cin >> n_paths;
 	cin >> n_vertices;
+	cin >> n_paths;
 
 	if (n_paths * n_vertices <= 0 || n_paths + n_vertices <= 0)
 	{
@@ -340,7 +445,7 @@ int main()
 	/*colors_of_vertices = new int[n_vertices];
 	memset(colors_of_vertices, 0, n_vertices * sizeof(*colors_of_vertices));
 */
-	cout << n_vertices;
+//	cout << n_vertices;
 	colors_of_vertices = (int*)calloc(n_vertices, sizeof(int));
 
 	start_coloring(n_vertices, n_paths, vertices, colors_of_vertices);
@@ -350,18 +455,18 @@ int main()
 
 	//**************
 	
-	for (i = 0; i < n_vertices; i++)
-		cout << colors_of_vertices[i] << endl;
+//	for (i = 0; i < n_vertices; i++)
+//		cout << colors_of_vertices[i] << endl;
 
-	cout << "%%%%%%%" << endl;
+//	cout << "%%%%%%%" << endl;
 
-	for (i = 0; i < n_vertices; i++)
-		vertices[i].out();
+//	for (i = 0; i < n_vertices; i++)
+//		vertices[i].out();
 
-	cout << "\n\n" << vertix_with_max_n_paths(vertices, -n_vertices) << "\n\n";
+//	cout << "\n\n" << vertix_with_max_n_paths(vertices, -n_vertices) << "\n\n";
 
-	for (i = 0; i < n_vertices; i++)
-		cout << vertix_with_max_n_paths(vertices, i) << endl;
+//	for (i = 0; i < n_vertices; i++)
+//		cout << vertix_with_max_n_paths(vertices, i) << endl;
 
 	delete(colors_of_vertices);
 
